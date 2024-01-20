@@ -9,6 +9,10 @@ const btnCloseModal = document.querySelector('.btn--close-modal');
 const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
 const btnScrollTo = document.querySelector('.btn--scroll-to');
 const section1 = document.querySelector('#section--1');
+const tabs = document.querySelectorAll('.operations__tab');
+const tabsContainer = document.querySelector('.operations__tab-container');
+const tabsContent = document.querySelectorAll('.operations__content');
+const nav = document.querySelector('.nav');
 
 const openModal = function (e) {
   e.preventDefault();
@@ -44,9 +48,9 @@ btnScrollTo.addEventListener('click', function (e) {
 //     document.querySelector(id).scrollIntoView({ behavior: 'smooth' });
 //   });
 // });
-console.log(
-  '   NOTE: because there could be a lot of elements in the page adding eventlistener for each one can bring performance issues. Therefore, in this case is better to put eventListener on the parent of the similar child sons, so there wont be performance issies in case of hundreds or thousands of elements on the page'
-);
+// console.log(
+//   '   NOTE: because there could be a lot of elements in the page adding eventlistener for each one can bring performance issues. Therefore, in this case is better to put eventListener on the parent of the similar child sons, so there wont be performance issies in case of hundreds or thousands of elements on the page'
+// );
 ///////////////////// Event delagation
 document.querySelector('.nav__links').addEventListener('click', function (e) {
   e.preventDefault();
@@ -57,6 +61,224 @@ document.querySelector('.nav__links').addEventListener('click', function (e) {
     document.querySelector(id).scrollIntoView({ behavior: 'smooth' });
   }
 });
+
+////////////////////// Table components
+
+// tabs.forEach(t => t.addEventListener('click', () => console.log('TAB')));
+
+tabsContainer.addEventListener('click', function (e) {
+  const clicked = e.target.closest('.operations__tab');
+  /* Guard clause: if is acase qhere is not the case then cancel the oparation. Use this when there is a lot of conditions to happen something */
+  if (!clicked) return;
+
+  /* Remove active classes */
+  tabs.forEach(t => t.classList.remove('operations__tab--active'));
+  tabsContent.forEach(c => c.classList.remove('operations__content--active'));
+
+  /* Active tab */
+  clicked.classList.add('operations__tab--active');
+  /* Activa content */
+  document
+    .querySelector(`.operations__content--${clicked.dataset.tab}`)
+    .classList.add('operations__content--active');
+});
+
+////////////////////////Menu fade inout
+const handleHover = function (e) {
+  if (e.target.classList.contains('nav__link')) {
+    const link = e.target;
+    const siblings = link.closest('.nav').querySelectorAll('.nav__link');
+    const logo = link.closest('.nav').querySelector('img');
+
+    siblings.forEach(el => {
+      if (el !== link) el.style.opacity = this;
+      logo.style.opacity = this;
+    });
+  }
+};
+
+// nav.addEventListener('mouseover', function (e) {
+//   handleHover(e, 0.5);
+// });
+// nav.addEventListener('mouseout', function (e) {
+//   handleHover(e, 1);
+// });
+nav.addEventListener('mouseover', handleHover.bind(0.5));
+nav.addEventListener('mouseout', handleHover.bind(1));
+
+/////////////////////////////////// Sticky navigation
+// const initialCoords = section1.getBoundingClientRect();
+// console.log(initialCoords);
+
+// window.addEventListener('scroll', function () {
+//   console.log(window.scrollY);
+//   if (this.window.scrollY > initialCoords.top) nav.classList.add('sticky');
+//   else nav.classList.remove('sticky');
+// });
+
+// console.log('on mobile this method will cause slowliness');
+
+// const obsCallback = function (entries, observer) {
+//   entries.forEach(entry => {
+//     console.log(entry);
+//   });
+// };
+
+// const obsOptions = {
+//   root: null,
+//   threshold: [0, 0.2],
+// };
+
+// const observer = new IntersectionObserver(obsCallback, obsOptions);
+// observer.observe(section1);
+const header = document.querySelector('.header');
+const navHeight = nav.getBoundingClientRect().height;
+
+const stickyNav = function (entries) {
+  const [entry] = entries;
+  !entry.isIntersecting
+    ? nav.classList.add('sticky')
+    : nav.classList.remove('sticky');
+};
+
+const headerObserver = new IntersectionObserver(stickyNav, {
+  root: null,
+  threshold: 0,
+  rootMargin: `-${navHeight}px`,
+});
+headerObserver.observe(header);
+
+//////////////////// Revealing sections on scroll
+const allSections = document.querySelectorAll('.section');
+
+const revealSection = function (entries, observer) {
+  const [entry] = entries;
+
+  if (!entry.isIntersecting) return;
+
+  entry.target.classList.remove('section--hidden');
+  observer.unobserve(entry.target);
+};
+
+const sectionObserver = new IntersectionObserver(revealSection, {
+  root: null,
+  threshold: 0.15,
+});
+allSections.forEach(function (section) {
+  sectionObserver.observe(section);
+  // section.classList.add('section--hidden');
+});
+
+////////////////////////// Lazy loading
+const imgTargets = document.querySelectorAll('img[data-src]');
+
+const loadImg = function (entries, observer) {
+  const [entry] = entries;
+
+  if (!entry.isIntersecting) return;
+
+  entry.target.src = entry.target.dataset.src;
+  entry.target.addEventListener('load', function () {
+    entry.target.classList.remove('lazy-img');
+  });
+
+  observer.unobserve(entry.target);
+};
+
+const imgObserver = new IntersectionObserver(loadImg, {
+  root: null,
+  threshold: 0,
+  rootMargin: '200px',
+});
+
+imgTargets.forEach(img => imgObserver.observe(img));
+
+////////////////////////////////// Slider
+const slider = function () {
+  const slides = document.querySelectorAll('.slide');
+  const btnLeft = document.querySelector('.slider__btn--left');
+  const btnRight = document.querySelector('.slider__btn--right');
+  const dotContainer = document.querySelector('.dots');
+
+  let currSlide = 0;
+  let maxSlide = slides.length;
+
+  /* --------------- Functions --------------- */
+
+  const createDots = function () {
+    slides.forEach(function (_, i) {
+      dotContainer.insertAdjacentHTML(
+        'beforeEnd',
+        `<button class="dots__dot" data-slide="${i}"></button>`
+      );
+    });
+  };
+
+  const activateDot = function (slide) {
+    document
+      .querySelectorAll('.dots__dot')
+      .forEach(dot => dot.classList.remove('dots__dot--active'));
+    document
+      .querySelector(`.dots__dot[data-slide="${slide}"]`)
+      .classList.add('dots__dot--active');
+  };
+
+  // slides.forEach(
+  //   (slide, i) => (slide.style.transform = `translateX(${i * 100}%)`)
+  // );
+
+  const goToSlide = function (slideToGo) {
+    slides.forEach(
+      (slide, i) =>
+        (slide.style.transform = `translateX(${(i - slideToGo) * 100}%)`)
+    );
+    activateDot(slideToGo);
+  };
+
+  const nextSlide = function () {
+    if (currSlide === maxSlide - 1) {
+      currSlide = 0;
+    } else {
+      currSlide++;
+    }
+    goToSlide(currSlide);
+  };
+
+  const prevSlide = function () {
+    if (currSlide === 0) {
+      currSlide = maxSlide - 1;
+    } else {
+      currSlide--;
+    }
+    goToSlide(currSlide);
+  };
+
+  /* --------------- Initialization --------------- */
+  const init = function () {
+    createDots();
+    goToSlide(0);
+    activateDot(0);
+  };
+  init();
+
+  /* --------------- Event handlers --------------- */
+  ////////// Going to the next/prev slide
+  btnRight.addEventListener('click', nextSlide);
+  btnLeft.addEventListener('click', prevSlide);
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') prevSlide();
+    e.key === 'ArrowRight' && nextSlide();
+  });
+
+  dotContainer.addEventListener('click', function (e) {
+    if (e.target.classList.contains('dots__dot')) {
+      const { slide } = e.target.dataset;
+      goToSlide(slide);
+    }
+  });
+};
+slider();
 
 ////////////////////////////////////
 
