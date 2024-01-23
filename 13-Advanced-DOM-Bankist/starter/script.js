@@ -487,3 +487,22 @@ slider();
 // [...h1.parentElement.children].forEach(function (el) {
 //   if (el !== h1) el.style.transform = 'scale(0.5)';
 // });
+
+console.log('------------ aula 203');
+
+document.addEventListener('DOMContentLoaded', function (e) {
+  console.log('HTML Parsed and DOM tree built', e);
+});
+console.log(
+  ' NOTE: you include the js script in  the end of the html to have everything parsed when you use the code in the script'
+);
+console.log('----- load event: happens when the page has fully loaded');
+window.addEventListener('load', function (e) {
+  console.log('page fully loaded', e);
+});
+// console.log('----- beforeunload');
+// window.addEventListener('beforeunload', function (e) {
+//   e.preventDefault();
+//   console.log(e);
+//   e.returnValue = '';
+// });
