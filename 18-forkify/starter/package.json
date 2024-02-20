@@ -4,7 +4,7 @@
   "description": "Aplication where the user hava access to lots of recipes",
   "scripts": {
     "start": "parcel index.html",
-    "build": "parcel build index.html"
+    "build": "parcel build index.html --dist-dir ./dist"
   },
   "author": "augustoHide",
   "license": "ISC",
